@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ business.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header -->
+    {% include 'base/navbar.html' %}
+
+    <!-- Business Details Section -->
+    <section class="max-w-7xl mx-auto p-6">
+      <!-- Header -->
+      <div class="bg-white shadow-md rounded-lg p-6 flex gap-6">
+        <img
+          src="business_image.jpg"
+          alt="{{ business.name }}"
+          class="w-40 h-40 object-cover rounded-lg"
+        />
+        <div class="flex-1">
+          <h1 class="text-2xl font-bold text-gray-800">{{ business.name }}</h1>
+          <p class="text-gray-600">
+            {{ business.address }}, {{ business.postal_code }}
+            <p>{{ business.city }}</p> 
+          </p>
+          <p class="text-green-600 mt-2">
+            Open Now <a href="#" class="underline">See all hours</a>
+          </p>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a
+              href="tel:{{ business.phone_number }}"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+              >📞 Phone Number</a
+            >
+            {% if business.website %}
+            <a
+              href="{{ business.website }}"
+              target="_blank"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+              >🌐 Website</a
+            >
+            {% endif %}
+            <a
+              href="#"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+              >💬 Message</a
+            >
+            <a
+              href="https://www.google.com/maps?q={{ business.latitude }},{{ business.longitude }}"
+              target="_blank"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+              >📍 Get Directions</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <!-- Left Column -->
+        <div class="lg:col-span-2 bg-white shadow-md rounded-lg p-6">
+          <h2 class="text-xl font-bold text-gray-800">Details & Description</h2>
+          <p class="mt-4 text-gray-600">{{ business.description }}</p>
+
+          <h3 class="text-lg font-semibold text-gray-800 mt-6">
+            Products and Services
+          </h3>
+          <ul class="list-disc pl-5 mt-2 text-gray-600">
+            <li>Free Quotes on Any Job</li>
+            <li>Plumbing</li>
+            <li>Drain Pipe Repair</li>
+            <li>Bathroom Sink Repair</li>
+            <li>...and more</li>
+          </ul>
+
+          <h3 class="text-lg font-semibold text-gray-800 mt-6">Specialties</h3>
+          <ul class="list-disc pl-5 mt-2 text-gray-600">
+            <li>Certified by TSSA and ComplyWorks</li>
+            <li>Certified by the BBB as A+ AAA</li>
+            <li>Fully Insured by WSIB</li>
+          </ul>
+
+          <h3 class="text-lg font-semibold text-gray-800 mt-6">Gallery</h3>
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <img
+              src="image1.jpg"
+              alt="Gallery Image 1"
+              class="w-full h-40 object-cover rounded-lg"
+            />
+            <img
+              src="image2.jpg"
+              alt="Gallery Image 2"
+              class="w-full h-40 object-cover rounded-lg"
+            />
+            <img
+              src="image3.jpg"
+              alt="Gallery Image 3"
+              class="w-full h-40 object-cover rounded-lg"
+            />
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h3 class="text-xl font-bold text-gray-800">Location</h3>
+          <iframe
+            src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q={{ business.latitude }},{{ business.longitude }}"
+            width="100%"
+            height="200"
+            class="mt-4 rounded-lg"
+            style="border: 0"
+            allowfullscreen=""
+            loading="lazy"
+          ></iframe>
+          <p class="mt-4 text-gray-600">
+            {{ business.address }}, {{ business.city }}, {{ business.postal_code
+            }}
+          </p>
+
+          <h3 class="text-lg font-semibold text-gray-800 mt-6">
+            Languages Spoken
+          </h3>
+          <p class="mt-2 text-gray-600">English</p>
+
+          <h3 class="text-lg font-semibold text-gray-800 mt-6">
+            Methods of Payment
+          </h3>
+          <div class="flex gap-4 mt-2">
+            <img src="visa.png" alt="Visa" class="w-10 h-6" />
+            <img src="mastercard.png" alt="MasterCard" class="w-10 h-6" />
+          </div>
+
+          <h3 class="text-lg font-semibold text-gray-800 mt-6">
+            Opening Hours
+          </h3>
+          <p class="mt-2 text-gray-600">Thursday: 7:00 AM - 7:00 PM</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="max-w-7xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
+      <h2 class="text-2xl font-bold text-gray-800">Customer Reviews</h2>
+      <div class="mt-4 flex items-center justify-between">
+        <div>
+          <p class="text-yellow-500 text-4xl font-bold">4.5 ★</p>
+          <p class="text-gray-600">275 Reviews</p>
+          <p class="text-gray-600">88% Recommended</p>
+        </div>
+        <a
+          href="#"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+          >Write a Review</a
+        >
+      </div>
+      <div class="mt-6">
+        {% for review in reviews %}
+        <div class="border-b pb-4 mb-4">
+          <p><strong>{{ review.user }}</strong> - {{ business.name }}</p>
+          <p class="text-yellow-500">{{ review.rating }} ★</p>
+          <p class="text-gray-600">{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      <a
+        href="#"
+        class="mt-4 block text-center bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700"
+        >See More Reviews</a
+      >
+    </section>
+
+    <!-- Footer -->
+    {% include 'base/footer.html' %}
+  </body>
+</html>

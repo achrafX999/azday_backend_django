@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .signup-container {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+      }
+      .input-group {
+        margin-bottom: 1rem;
+      }
+      .input-group input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 0.8rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+      .terms {
+        font-size: 0.9rem;
+        text-align: center;
+        margin: 1rem 0;
+      }
+      .terms a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="signup-container">
+      <h1>Get started absolutely free</h1>
+      <form action="/register/" method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+          <input
+            type="text"
+            name="first_name"
+            placeholder="First Name"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <input
+            type="text"
+            name="last_name"
+            placeholder="Last Name"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <input type="email" name="email" placeholder="Email" required />
+        </div>
+        <div class="input-group">
+          <input
+            type="password"
+            name="password1"
+            placeholder="Password"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <input
+            type="password"
+            name="password2"
+            placeholder="Confirm Password"
+            required
+          />
+        </div>
+        <p class="terms">
+          By signing up, I agree to the <a href="#">Terms of Service</a> and
+          <a href="#">Privacy Policy</a>
+        </p>
+        <button type="submit" class="btn">Sign Up</button>
+      </form>
+    </div>
+  </body>
+</html>

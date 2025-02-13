@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Listing Form</title>
+  </head>
+  <body class="bg-gray-100 p-6">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+      <h1 class="text-2xl font-bold mb-6">List your Business</h1>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %} {{ form.as_p }}
+
+        <!-- Add the image upload field -->
+        <div class="mb-4">
+          <label for="image" class="block text-sm font-medium text-gray-700"
+            >Upload Image</label
+          >
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+
+        <!-- Add the opening hours section -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700"
+            >Opening Hours</label
+          >
+          <div class="mt-1 grid grid-cols-2 gap-4">
+            <div>
+              <label for="saturday" class="block text-sm text-gray-600"
+                >Saturday</label
+              >
+              <input
+                type="time"
+                id="saturday"
+                name="saturday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label for="sunday" class="block text-sm text-gray-600"
+                >Sunday</label
+              >
+              <input
+                type="time"
+                id="sunday"
+                name="sunday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label for="monday" class="block text-sm text-gray-600"
+                >Monday</label
+              >
+              <input
+                type="time"
+                id="monday"
+                name="monday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label for="tuesday" class="block text-sm text-gray-600"
+                >Tuesday</label
+              >
+              <input
+                type="time"
+                id="tuesday"
+                name="tuesday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label for="wednesday" class="block text-sm text-gray-600"
+                >Wednesday</label
+              >
+              <input
+                type="time"
+                id="wednesday"
+                name="wednesday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label for="thursday" class="block text-sm text-gray-600"
+                >Thursday</label
+              >
+              <input
+                type="time"
+                id="thursday"
+                name="thursday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label for="friday" class="block text-sm text-gray-600"
+                >Friday</label
+              >
+              <input
+                type="time"
+                id="friday"
+                name="friday"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full">
+          Upload Now
+        </button>
+      </form>
+    </div>
+  </body>
+  <script src="https://cdn.tailwindcss.com"></script>
+</html>

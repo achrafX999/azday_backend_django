@@ -1,0 +1,40 @@
+<header class="bg-gray-800 text-white">
+  <div class="container mx-auto flex justify-between items-center p-4">
+    {% load static %}
+    <!-- Brand Logo -->
+    <h1 class="text-2xl font-bold">AZZDAY</h1>
+
+    <!-- Navigation Menu -->
+    <nav>
+      <ul class="flex items-center space-x-6">
+        <li>
+          <a href="#" class="hover:text-yellow-400">Speak with an Expert</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li>
+          <a href="{% url 'business_create' %}" class="hover:text-yellow-400">
+            Contact Us
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'logout' %}" class="hover:text-yellow-400">Log Out</a>
+        </li>
+        <li><a href="#" class="hover:text-yellow-400">My Profile</a></li>
+        <!-- Profile Name Zone -->
+        <li>
+          <span class="font-medium"
+            >Welcome, {{ user.first_name|default:user.email }}</span
+          >
+        </li>
+        {% else %}
+        <li>
+          <a href="{% url 'register' %}" class="hover:text-yellow-400">Join</a>
+        </li>
+        <li>
+          <a href="{% url 'login' %}" class="hover:text-yellow-400">Log In</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</header>
