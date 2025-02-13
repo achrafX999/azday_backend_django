@@ -1,0 +1,17 @@
+# Ignorer le dossier venv (qui est en dehors du projet Git)
+../venv/
+
+# Ignorer les fichiers Python inutiles
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+.env
+
+# Ignorer les fichiers de log et temporaires
+*.log
+*.tmp
+
+# Ignorer les fichiers spécifiques aux IDE/éditeurs
+.vscode/
+.idea/
