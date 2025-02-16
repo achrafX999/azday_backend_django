@@ -1,15 +1,17 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from base.managers import CustomUserManager
+
 class CustomUser(AbstractUser):
     username = None  # Remove the username field
     email = models.EmailField(unique=True)  # Use email as the unique identifier
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-
+    phone_number = models.CharField(max_length=20, blank=True, null=True)  # Ajout de blank=True, null=True
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']  # Fields required when creating a user
-
+    objects = CustomUserManager()
     def __str__(self):
         return self.email
 
@@ -21,7 +23,7 @@ class Business(models.Model):
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
-    phone_number = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to='business_images/', blank=True, null=True)  # Photo de l'entreprise

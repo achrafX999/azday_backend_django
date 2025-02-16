@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, login , logout
 from django.shortcuts import render , get_object_or_404 , redirect
 from django.contrib import messages
+from rest_framework import status  # ✅ Import ajouté
+
 from .models import Business , Review
 from .forms import CustomUserCreationForm , BusinessForm 
 from django.contrib.auth.decorators import login_required
@@ -12,11 +14,20 @@ from .serializers import UserSerializer
 
 @api_view(['POST'])
 def register_api(request):
-    serializer = UserSerializer(data=request.data)
+    data = request.data
+    phone_number = data.get("phone_number")  # Récupérer le numéro de téléphone
+
+    serializer = UserSerializer(data=data)
+    
     if serializer.is_valid():
-        serializer.save()
-        return Response({"message": "User registered successfully"}, status=201)
-    return Response(serializer.errors, status=400)
+        user = serializer.save()
+        if phone_number:  # Vérifier si un numéro de téléphone a été fourni
+            user.phone_number = phone_number
+            user.save()  # Sauvegarde en base de données
+
+        return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Create your views here.
