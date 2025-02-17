@@ -40,8 +40,15 @@ INSTALLED_APPS = [
     'base.apps.BaseConfig',
     'rest_framework',
     'corsheaders',  # ✅ Ajouté ici pour gérer CORS
+    'rest_framework.authtoken',  # ✅ Ajout de l'authentification par token
 
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 AUTH_USER_MODEL = 'base.CustomUser'
 
@@ -138,4 +145,6 @@ MEDIA_ROOT = BASE_DIR / 'static/business_images'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = ["http://localhost:4200"]
+
 

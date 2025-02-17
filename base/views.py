@@ -6,11 +6,13 @@ from rest_framework import status  # ✅ Import ajouté
 from .models import Business , Review
 from .forms import CustomUserCreationForm , BusinessForm 
 from django.contrib.auth.decorators import login_required
-
-###########################CETTE PARTIE POUR API JSON FAIT PAR ACHRAF
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import UserSerializer
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
+
+
 
 @api_view(['POST'])
 def register_api(request):
@@ -29,6 +31,36 @@ def register_api(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+def sign_in_api(request):
+    print("Données reçues :", request.data)  # 🔍 Vérifier les données dans le terminal Django
+
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    if not email or not password:
+        return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Récupérer l'utilisateur basé sur l'email
+    User = get_user_model()
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Vérifier le mot de passe
+    if not user.check_password(password):
+        return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Générer un token d'authentification
+    token, created = Token.objects.get_or_create(user=user)
+
+    return Response({
+        "message": "Login successful",
+        "token": token.key,
+        "user": UserSerializer(user).data  # Retourne les infos de l'utilisateur
+    }, status=status.HTTP_200_OK)
 
 # Create your views here.
 
