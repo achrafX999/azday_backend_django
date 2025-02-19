@@ -1,19 +1,24 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-
 from base.managers import CustomUserManager
 
-class CustomUser(AbstractUser):
-    username = None  # Remove the username field
-    email = models.EmailField(unique=True)  # Use email as the unique identifier
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)  # Utilisation de l'email comme identifiant unique
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)  # Ajout de blank=True, null=True
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']  # Fields required when creating a user
+    phone_number = models.CharField(max_length=20, blank=True, null=True)  
+
+    is_active = models.BooleanField(default=True)  # Utile pour activer/désactiver des comptes
+    is_staff = models.BooleanField(default=False)  # Utile pour les accès admin
+
+    USERNAME_FIELD = 'email'  # Authentification avec email uniquement
+    REQUIRED_FIELDS = ['first_name', 'last_name']  # Champs obligatoires lors de l'inscription
+
     objects = CustomUserManager()
+
     def __str__(self):
         return self.email
+
 
 class Business(models.Model):
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='businesses')

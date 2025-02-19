@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+from .views import GoogleLogin  # Import de la vue GoogleLogin
 from . import views 
 
 
 urlpatterns = [
     path('api/register/', views.register_api, name='register_api'),  # API REST pour Angular
+    path('api/auth/social/google/', GoogleLogin.as_view(), name='google_login'),
 
     ]
 

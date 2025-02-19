@@ -121,3 +121,10 @@ def business_create_view(request):
         form = BusinessForm()
 
     return render(request, 'base/business_form.html', {'form': form})
+
+
+from dj_rest_auth.registration.views import SocialLoginView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter

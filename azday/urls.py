@@ -20,6 +20,17 @@ from base.views import sign_in_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Routes d'authentification API
     path('api/login/', sign_in_api, name='login'),
-    path('',include('base.urls')),
+    path('api/auth/', include('dj_rest_auth.urls')),  # Connexion/Déconnexion API
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),  # Inscription API
+
+    # Routes d'authentification sociale (Google, Apple, LinkedIn)
+    path('api/auth/social/', include('allauth.socialaccount.urls')),
+
+    path('accounts/', include('allauth.urls')),
+
+    path('', include('base.urls')),  # Autres URLs de ton app
 ]
+

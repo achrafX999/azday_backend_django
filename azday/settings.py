@@ -37,11 +37,27 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'base.apps.BaseConfig',
-    'rest_framework',
-    'corsheaders',  # ✅ Ajouté ici pour gérer CORS
-    'rest_framework.authtoken',  # ✅ Ajout de l'authentification par token
+    'django.contrib.sites',  # ✅ Nécessaire pour django-allauth
 
+    # Applications personnalisées
+    'base.apps.BaseConfig',
+
+    # Applications d'authentification
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',  # ✅ Activation de Google
+    'allauth.socialaccount.providers.apple',   # ✅ Activation d'Apple
+    'allauth.socialaccount.providers.openid_connect',
+
+    # REST Framework et Authentification
+    'rest_framework',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'rest_framework.authtoken',
+    'corsheaders',
+
+    'django_extensions'
 ]
 
 REST_FRAMEWORK = {
@@ -58,6 +74,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # ✅ Ajout ici
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -147,4 +164,54 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = ["http://localhost:4200"]
 
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Authentification classique
+    'allauth.account.auth_backends.AuthenticationBackend',  # Authentification via allauth
+]
+
+from decouple import config
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID'),
+            'secret': config('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        },
+        'SCOPE': [
+            'profile',
+            'email'
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'apple': {
+        'APP': {
+            'client_id': 'TON_CLIENT_ID',
+            'secret': 'TON_CLIENT_SECRET',
+            'key': 'TON_KEY'
+        },
+        'SCOPE': [
+            'name',
+            'email'
+        ],
+        'AUTH_PARAMS': {
+            'response_mode': 'form_post',
+        }
+    },
+    
+}
+
+# Redirections après connexion/déconnexion
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/'
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False  # Désactive le champ username
+ACCOUNT_EMAIL_VERIFICATION = "optional"
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
