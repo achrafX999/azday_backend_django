@@ -6,6 +6,7 @@ from . import views
 
 
 urlpatterns = [
+    #path('api/register/', RegisterUserView.as_view(), name='register'),
     path('api/register/', views.register_api, name='register_api'),  # API REST pour Angular
     path('api/auth/social/google/', GoogleLogin.as_view(), name='google_login'),
 
