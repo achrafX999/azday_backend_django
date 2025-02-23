@@ -2,14 +2,24 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from base.managers import CustomUserManager
 
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db import models
+from base.managers import CustomUserManager
+from django.utils import timezone
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)  # Utilisation de l'email comme identifiant unique
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)  
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
 
-    is_active = models.BooleanField(default=True)  # Utile pour activer/désactiver des comptes
-    is_staff = models.BooleanField(default=False)  # Utile pour les accès admin
+    # Champs pour la vérification par SMS
+    is_phone_verified = models.BooleanField(default=False)
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
+    code_expires_at = models.DateTimeField(blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)  # Activer/désactiver des comptes
+    is_staff = models.BooleanField(default=False)  # Pour l'accès admin
 
     USERNAME_FIELD = 'email'  # Authentification avec email uniquement
     REQUIRED_FIELDS = ['first_name', 'last_name']  # Champs obligatoires lors de l'inscription
@@ -18,6 +28,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def is_code_valid(self, code):
+        """Vérifie que le code fourni correspond et n'est pas expiré."""
+        if self.verification_code == code and self.code_expires_at and timezone.now() < self.code_expires_at:
+            return True
+        return False
+
 
 
 class Business(models.Model):
