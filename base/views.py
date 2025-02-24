@@ -380,6 +380,20 @@ class RegisterUserView(APIView):
             return Response({'message': 'User created and SMS sent.'}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from .serializers import BusinessSerializer
+
+class AddBusinessView(APIView):
+    def post(self, request):
+        serializer = BusinessSerializer(data=request.data)
+        if serializer.is_valid():
+            # Si l'utilisateur est authentifié, on peut associer le business à request.user.
+            # Sinon, adaptez selon vos besoins (par exemple, en passant l'owner dans les données).
+            serializer.save(owner=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # Create your views here.
 
 

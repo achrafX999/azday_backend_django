@@ -37,37 +37,77 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 
+
+# ------------------------------
+# Modèle Business
+# ------------------------------
+from django.db import models
+from django.conf import settings
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # Chaque catégorie est unique
+
+    def __str__(self):
+        return self.name
+
 class Business(models.Model):
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='businesses')
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    category = models.CharField(max_length=100)  # e.g., Coiffeur, Plumber, etc.
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='businesses')
+    name = models.CharField(max_length=255)  # Correspond à "businessName" du formulaire Angular
+    description = models.TextField(blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     address = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
-    image = models.ImageField(upload_to='business_images/', blank=True, null=True)  # Photo de l'entreprise
-    latitude = models.FloatField()  # Pour la localisation sur la carte
-    longitude = models.FloatField()
+    profile_picture = models.ImageField(upload_to='business_images/', blank=True, null=True)
+    latitude = models.FloatField()   # Pour afficher la position sur la carte (obligatoire)
+    longitude = models.FloatField()  # Pour afficher la position sur la carte (obligatoire)
+    
+    # Champs JSON pour stocker plusieurs valeurs sous forme de liste
+    languages = models.JSONField(blank=True, null=True)
+    payment_methods = models.JSONField(blank=True, null=True)
+    product_services = models.JSONField(blank=True, null=True)
+    specialize = models.JSONField(blank=True, null=True)
+    
+    # Champs supplémentaires pour l'admin
+    helpful_count = models.PositiveIntegerField(default=0)
+    report_count = models.PositiveIntegerField(default=0)
+    clicks = models.PositiveIntegerField(default=0)
+    response_rate = models.FloatField(default=0.0)
+    active = models.BooleanField(default=True)
+    banned = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
+# ------------------------------
+# Modèle pour plusieurs Images supplémentaires associées à un Business
+# ------------------------------
+class BusinessImage(models.Model):
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='business_images/')
 
+    def __str__(self):
+        return f"Image for {self.business.name}"
+
+# ------------------------------
+# Modèle pour les Avis sur un Business
+# ------------------------------
 class Review(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reviews')
-    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # Rating de 1 à 5
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # Note de 1 à 5
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Review by {self.user.email} for {self.business.name}"
 
-
+# ------------------------------
+# Modèle pour les Horaires d'Ouverture d'un Business
+# ------------------------------
 class OpeningHours(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='opening_hours')
     day = models.CharField(max_length=10, choices=[

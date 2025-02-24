@@ -12,13 +12,14 @@ class BusinessForm(forms.ModelForm):
     class Meta:
         model = Business
         fields = [
-            'name', 'description', 'category', 'address', 'city', 
-            'postal_code', 'phone_number', 'email', 'website', 
-            'image', 'latitude', 'longitude'
+            'name', 'description', 'category', 'address', 
+            'phone_number', 'email', 'website', 
+            'profile_picture', 'latitude', 'longitude',
+            'languages', 'payment_methods', 'product_services', 'specialize'
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3, 'class': 'mt-1 block w-full p-2 border border-gray-300 rounded'}),
-            'category': forms.TextInput(attrs={'class': 'mt-1 block w-full p-2 border border-gray-300 rounded'}),
+            'category': forms.Select(attrs={'class': 'mt-1 block w-full p-2 border border-gray-300 rounded'}),
             'address': forms.TextInput(attrs={'class': 'mt-1 block w-full p-2 border border-gray-300 rounded'}),
-            # Add classes for other fields if needed
+            # Ajoutez des widgets pour les nouveaux champs JSON si besoin
         }

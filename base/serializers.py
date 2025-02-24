@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import Business, CustomUser
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +23,13 @@ class UserRegistrationSerializer(serializers.Serializer):
         if data['password'] != data['confirmPassword']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
+    
+class BusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Business
+        fields = [
+            'id', 'owner', 'name', 'description', 'category', 'address',
+            'phone_number', 'email', 'website', 'profile_picture',
+            'latitude', 'longitude', 'languages', 'payment_methods',
+            'product_services', 'specialize', 'created_at'
+        ]
