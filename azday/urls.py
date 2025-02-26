@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from base.views import sign_in_api
+from base.views import RegisterUserView, sign_in_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +28,9 @@ urlpatterns = [
 
     # Routes d'authentification sociale (Google, Apple, LinkedIn)
     path('api/auth/social/', include('allauth.socialaccount.urls')),
+
+    path('api/register/', RegisterUserView.as_view(), name='register'),
+
 
     path('accounts/', include('allauth.urls')),
 

@@ -1,18 +1,31 @@
-from django.contrib.auth import authenticate, login , logout
-from django.shortcuts import render , get_object_or_404 , redirect
+# Imports Django
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from rest_framework import status  # ✅ Import ajouté
-
-from .models import Business , Review
-from .forms import CustomUserCreationForm , BusinessForm 
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
+# Imports DRF
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import UserSerializer
+from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import get_user_model
 
+# Imports tiers
+import random
+import json
+from twilio.rest import Client
 
+# Imports locaux
+from .models import Business, Category, Review, OpeningHours, CustomUser
+from .forms import CustomUserCreationForm, BusinessForm
+from .serializers import (
+    CategorySerializer,
+    UserSerializer,
+    UserRegistrationSerializer,
+    BusinessSerializer
+)
 
 @api_view(['POST'])
 def register_api(request):
@@ -62,6 +75,375 @@ def sign_in_api(request):
         "user": UserSerializer(user).data  # Retourne les infos de l'utilisateur
     }, status=status.HTTP_200_OK)
 
+class RegisterUserView(APIView):
+    def post(self, request):
+        print("Données reçues :", request.data)
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            print("Données validées :", data)
+            
+            # Retirer le champ confirmPassword
+            data.pop('confirmPassword', None)
+            
+            email = data['email']
+            password = data['password']
+            first_name = data['first_name']
+            last_name = data['last_name']
+            phone_number = data['phone_number']
+
+            if CustomUser.objects.filter(email=email).exists():
+                print("Utilisateur déjà existant pour l'email :", email)
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = CustomUser.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number
+                )
+                print("Utilisateur créé :", user)
+            except Exception as e:
+                print("Erreur lors de la création de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Génération d'un code de vérification à 6 chiffres
+            code = str(random.randint(100000, 999999))
+            expires_at = timezone.now() + timezone.timedelta(minutes=10)
+            user.verification_code = code
+            user.code_expires_at = expires_at
+            user.is_phone_verified = False
+
+            try:
+                user.save()
+                print("Utilisateur sauvegardé avec succès.")
+            except Exception as e:
+                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Bloc d'envoi de SMS COMMENTÉ pour le test
+            """
+            try:
+                account_sid = "YOUR_TWILIO_SID"
+                auth_token = "YOUR_TWILIO_AUTH_TOKEN"
+                client = Client(account_sid, auth_token)
+
+                message = client.messages.create(
+                    body=f"Votre code de vérification est : {code}",
+                    from_="+1234567890",  # Remplacez par votre numéro Twilio
+                    to=phone_number
+                )
+            except Exception as e:
+                print("Erreur lors de l'envoi du SMS :", e)
+                import traceback
+                traceback.print_exc()
+                user.delete()
+                return Response({'error': 'Failed to send SMS. Please try again later.'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            """
+
+            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
+        else:
+            print("Erreur de validation du serializer :", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        print("Données reçues :", request.data)
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            print("Données validées :", data)
+            
+            # Retirer le champ confirmPassword
+            data.pop('confirmPassword', None)
+            
+            email = data['email']
+            password = data['password']
+            first_name = data['first_name']
+            last_name = data['last_name']
+            phone_number = data['phone_number']
+
+            if CustomUser.objects.filter(email=email).exists():
+                print("Utilisateur déjà existant pour l'email :", email)
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = CustomUser.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number
+                )
+                print("Utilisateur créé :", user)
+            except Exception as e:
+                print("Erreur lors de la création de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Génération d'un code de vérification à 6 chiffres
+            code = str(random.randint(100000, 999999))
+            expires_at = timezone.now() + timezone.timedelta(minutes=10)
+            user.verification_code = code
+            user.code_expires_at = expires_at
+            user.is_phone_verified = False
+
+            try:
+                user.save()
+                print("Utilisateur sauvegardé avec succès.")
+            except Exception as e:
+                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
+        else:
+            print("Erreur de validation du serializer :", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        print("----- Début de la méthode post -----")
+        print("Données reçues :", request.data)
+        
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            data.pop('confirmPassword', None)
+            
+            email = data['email']
+            password = data['password']
+            first_name = data['first_name']
+            last_name = data['last_name']
+            phone_number = data['phone_number']
+
+            if CustomUser.objects.filter(email=email).exists():
+                print("Utilisateur déjà existant pour l'email :", email)
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                # Création de l'utilisateur
+                user = CustomUser.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number
+                )
+                print("Utilisateur créé :", user)
+            except Exception as e:
+                print("Erreur lors de la création de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Génération d'un code de vérification à 6 chiffres
+            code = str(random.randint(100000, 999999))
+            expires_at = timezone.now() + timezone.timedelta(minutes=10)
+            user.verification_code = code
+            user.code_expires_at = expires_at
+            user.is_phone_verified = False
+
+            try:
+                user.save()
+                print("Utilisateur sauvegardé avec succès.")
+            except Exception as e:
+                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            print("----- Fin de la méthode post -----")
+            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
+        else:
+            print("Erreur de validation du serializer :", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        print("Données reçues :", request.data)  # Log des données entrantes
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            print("Données validées :", data)
+            email = data['email']
+            password = data['password']
+            first_name = data['first_name']
+            last_name = data['last_name']
+            phone_number = data['phone_number']
+
+            if CustomUser.objects.filter(email=email).exists():
+                print("Utilisateur déjà existant pour l'email :", email)
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                # Création de l'utilisateur
+                user = CustomUser.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number
+                )
+                print("Utilisateur créé :", user)
+            except Exception as e:
+                print("Erreur lors de la création de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Génération d'un code de vérification à 6 chiffres
+            code = str(random.randint(100000, 999999))
+            expires_at = timezone.now() + timezone.timedelta(minutes=10)
+            user.verification_code = code
+            user.code_expires_at = expires_at
+            user.is_phone_verified = False
+
+            try:
+                user.save()
+                print("Utilisateur sauvegardé avec succès.")
+            except Exception as e:
+                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
+                import traceback
+                traceback.print_exc()
+                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Bloc d'envoi de SMS commenté pour l'instant
+            """
+            try:
+                account_sid = "YOUR_TWILIO_SID"
+                auth_token = "YOUR_TWILIO_AUTH_TOKEN"
+                client = Client(account_sid, auth_token)
+
+                message = client.messages.create(
+                    body=f"Votre code de vérification est : {code}",
+                    from_="+1234567890",  # Remplacez par votre numéro Twilio
+                    to=phone_number
+                )
+            except Exception as e:
+                print("Erreur lors de l'envoi du SMS :", e)
+                import traceback
+                traceback.print_exc()
+                user.delete()
+                return Response({'error': f'Failed to send SMS. Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            """
+
+            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
+        else:
+            print("Erreur de validation du serializer :", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        print("Données reçues :", request.data)  # Log des données entrantes
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            email = data['email']
+            password = data['password']
+            first_name = data['first_name']
+            last_name = data['last_name']
+            phone_number = data['phone_number']
+
+            if CustomUser.objects.filter(email=email).exists():
+                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Création de l'utilisateur
+            user = CustomUser.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                phone_number=phone_number
+            )
+
+            # Génération d'un code de vérification à 6 chiffres
+            code = str(random.randint(100000, 999999))
+            expires_at = timezone.now() + timezone.timedelta(minutes=10)
+            user.verification_code = code
+            user.code_expires_at = expires_at
+            user.is_phone_verified = False
+            user.save()
+
+            # Envoi du SMS via Twilio
+            try:
+                account_sid = "YOUR_TWILIO_SID"
+                auth_token = "YOUR_TWILIO_AUTH_TOKEN"
+                client = Client(account_sid, auth_token)
+
+                message = client.messages.create(
+                    body=f"Votre code de vérification est : {code}",
+                    from_="+1234567890",  # Remplacez par votre numéro Twilio
+                    to=phone_number
+                )
+            except Exception as e:
+                # En cas d'erreur lors de l'envoi, supprimer l'utilisateur
+                user.delete()
+                return Response({'error': 'Failed to send SMS. Please try again later.'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            return Response({'message': 'User created and SMS sent.'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from .serializers import BusinessSerializer
+
+class AddBusinessView(APIView):
+    def post(self, request):
+        # Valider les données du business via le serializer
+        serializer = BusinessSerializer(data=request.data)
+        if serializer.is_valid():
+            # Créer le business en associant le propriétaire (request.user)
+            business = serializer.save(owner=request.user)
+            
+            # Traitement des horaires d'ouverture
+            opening_hours_data = request.data.get('opening_hours')
+            if opening_hours_data:
+                try:
+                    # On attend que ce soit une liste d'objets, par exemple :
+                    # [{"dayName": "Monday", "openTime": "08:00", "closeTime": "18:00"}, ...]
+                    hours = json.loads(opening_hours_data)
+                    for entry in hours:
+                        day_name = entry.get('dayName')
+                        open_time = entry.get('openTime')
+                        close_time = entry.get('closeTime')
+                        if day_name and open_time and close_time:
+                            OpeningHours.objects.create(
+                                business=business,
+                                day=day_name,
+                                open_time=open_time,
+                                close_time=close_time
+                            )
+                        else:
+                            return Response(
+                                {'error': 'Each opening hours entry must include dayName, openTime and closeTime.'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                except json.JSONDecodeError:
+                    return Response(
+                        {'error': 'Invalid JSON format for opening_hours.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                except Exception as e:
+                    return Response(
+                        {'error': f'Error processing opening_hours: {str(e)}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            return Response(BusinessSerializer(business).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+from dj_rest_auth.registration.views import SocialLoginView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
 # Create your views here.
 
 
@@ -122,9 +504,3 @@ def business_create_view(request):
 
     return render(request, 'base/business_form.html', {'form': form})
 
-
-from dj_rest_auth.registration.views import SocialLoginView
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter

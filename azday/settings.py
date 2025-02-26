@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     # REST Framework et Authentification
     'rest_framework',
+    
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'rest_framework.authtoken',
