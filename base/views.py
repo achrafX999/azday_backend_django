@@ -1,25 +1,31 @@
-from django.contrib.auth import authenticate, login , logout
-from django.shortcuts import render , get_object_or_404 , redirect
+# Imports Django
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from rest_framework import status  # ✅ Import ajouté
-
-from .models import Business , Review
-from .forms import CustomUserCreationForm , BusinessForm 
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
+# Imports DRF
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import UserSerializer
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import get_user_model
-
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils import timezone
+from rest_framework.authtoken.models import Token
+
+# Imports tiers
 import random
+import json
 from twilio.rest import Client
-from .serializers import UserRegistrationSerializer
-from .models import CustomUser
+
+# Imports locaux
+from .models import Business, Category, Review, OpeningHours, CustomUser
+from .forms import CustomUserCreationForm, BusinessForm
+from .serializers import (
+    CategorySerializer,
+    UserSerializer,
+    UserRegistrationSerializer,
+    BusinessSerializer
+)
 
 @api_view(['POST'])
 def register_api(request):
@@ -385,15 +391,59 @@ from .serializers import BusinessSerializer
 
 class AddBusinessView(APIView):
     def post(self, request):
+        # Valider les données du business via le serializer
         serializer = BusinessSerializer(data=request.data)
         if serializer.is_valid():
-            # Si l'utilisateur est authentifié, on peut associer le business à request.user.
-            # Sinon, adaptez selon vos besoins (par exemple, en passant l'owner dans les données).
-            serializer.save(owner=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # Créer le business en associant le propriétaire (request.user)
+            business = serializer.save(owner=request.user)
+            
+            # Traitement des horaires d'ouverture
+            opening_hours_data = request.data.get('opening_hours')
+            if opening_hours_data:
+                try:
+                    # On attend que ce soit une liste d'objets, par exemple :
+                    # [{"dayName": "Monday", "openTime": "08:00", "closeTime": "18:00"}, ...]
+                    hours = json.loads(opening_hours_data)
+                    for entry in hours:
+                        day_name = entry.get('dayName')
+                        open_time = entry.get('openTime')
+                        close_time = entry.get('closeTime')
+                        if day_name and open_time and close_time:
+                            OpeningHours.objects.create(
+                                business=business,
+                                day=day_name,
+                                open_time=open_time,
+                                close_time=close_time
+                            )
+                        else:
+                            return Response(
+                                {'error': 'Each opening hours entry must include dayName, openTime and closeTime.'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                except json.JSONDecodeError:
+                    return Response(
+                        {'error': 'Invalid JSON format for opening_hours.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                except Exception as e:
+                    return Response(
+                        {'error': f'Error processing opening_hours: {str(e)}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            return Response(BusinessSerializer(business).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
+from dj_rest_auth.registration.views import SocialLoginView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
 # Create your views here.
 
 
@@ -454,9 +504,3 @@ def business_create_view(request):
 
     return render(request, 'base/business_form.html', {'form': form})
 
-
-from dj_rest_auth.registration.views import SocialLoginView
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter

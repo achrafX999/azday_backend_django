@@ -33,3 +33,26 @@ class BusinessSerializer(serializers.ModelSerializer):
             'latitude', 'longitude', 'languages', 'payment_methods',
             'product_services', 'specialize', 'created_at'
         ]
+        extra_kwargs = {
+            'owner': {'read_only': True},
+        }
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Category
+from rest_framework import serializers
+
+# Serializer pour la catégorie
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+class AddCategoryView(APIView):
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            category = serializer.save()
+            return Response(CategorySerializer(category).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
