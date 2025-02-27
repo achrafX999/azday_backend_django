@@ -77,15 +77,15 @@ def sign_in_api(request):
 
 class RegisterUserView(APIView):
     def post(self, request):
+        print("----- Début de la méthode post -----")
         print("Données reçues :", request.data)
+
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
-            print("Données validées :", data)
-            
-            # Retirer le champ confirmPassword
+            # Retirer le champ confirmPassword s'il existe
             data.pop('confirmPassword', None)
-            
+
             email = data['email']
             password = data['password']
             first_name = data['first_name']
@@ -94,9 +94,13 @@ class RegisterUserView(APIView):
 
             if CustomUser.objects.filter(email=email).exists():
                 print("Utilisateur déjà existant pour l'email :", email)
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'error': 'User with this email already exists.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             try:
+                # Création de l'utilisateur
                 user = CustomUser.objects.create_user(
                     email=email,
                     password=password,
@@ -107,9 +111,11 @@ class RegisterUserView(APIView):
                 print("Utilisateur créé :", user)
             except Exception as e:
                 print("Erreur lors de la création de l'utilisateur :", e)
-                import traceback
                 traceback.print_exc()
-                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {'error': f'Error creating user: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
             # Génération d'un code de vérification à 6 chiffres
             code = str(random.randint(100000, 999999))
@@ -123,9 +129,11 @@ class RegisterUserView(APIView):
                 print("Utilisateur sauvegardé avec succès.")
             except Exception as e:
                 print("Erreur lors de la sauvegarde de l'utilisateur :", e)
-                import traceback
                 traceback.print_exc()
-                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {'error': f'Error saving user: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
             # Bloc d'envoi de SMS COMMENTÉ pour le test
             """
@@ -141,250 +149,21 @@ class RegisterUserView(APIView):
                 )
             except Exception as e:
                 print("Erreur lors de l'envoi du SMS :", e)
-                import traceback
                 traceback.print_exc()
                 user.delete()
-                return Response({'error': 'Failed to send SMS. Please try again later.'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {'error': 'Failed to send SMS. Please try again later.'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             """
-
-            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
-        else:
-            print("Erreur de validation du serializer :", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    def post(self, request):
-        print("Données reçues :", request.data)
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            print("Données validées :", data)
-            
-            # Retirer le champ confirmPassword
-            data.pop('confirmPassword', None)
-            
-            email = data['email']
-            password = data['password']
-            first_name = data['first_name']
-            last_name = data['last_name']
-            phone_number = data['phone_number']
-
-            if CustomUser.objects.filter(email=email).exists():
-                print("Utilisateur déjà existant pour l'email :", email)
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                user = CustomUser.objects.create_user(
-                    email=email,
-                    password=password,
-                    first_name=first_name,
-                    last_name=last_name,
-                    phone_number=phone_number
-                )
-                print("Utilisateur créé :", user)
-            except Exception as e:
-                print("Erreur lors de la création de l'utilisateur :", e)
-                import traceback
-                traceback.print_exc()
-                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # Génération d'un code de vérification à 6 chiffres
-            code = str(random.randint(100000, 999999))
-            expires_at = timezone.now() + timezone.timedelta(minutes=10)
-            user.verification_code = code
-            user.code_expires_at = expires_at
-            user.is_phone_verified = False
-
-            try:
-                user.save()
-                print("Utilisateur sauvegardé avec succès.")
-            except Exception as e:
-                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
-                import traceback
-                traceback.print_exc()
-                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
-        else:
-            print("Erreur de validation du serializer :", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    def post(self, request):
-        print("----- Début de la méthode post -----")
-        print("Données reçues :", request.data)
-        
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            data.pop('confirmPassword', None)
-            
-            email = data['email']
-            password = data['password']
-            first_name = data['first_name']
-            last_name = data['last_name']
-            phone_number = data['phone_number']
-
-            if CustomUser.objects.filter(email=email).exists():
-                print("Utilisateur déjà existant pour l'email :", email)
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                # Création de l'utilisateur
-                user = CustomUser.objects.create_user(
-                    email=email,
-                    password=password,
-                    first_name=first_name,
-                    last_name=last_name,
-                    phone_number=phone_number
-                )
-                print("Utilisateur créé :", user)
-            except Exception as e:
-                print("Erreur lors de la création de l'utilisateur :", e)
-                import traceback
-                traceback.print_exc()
-                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # Génération d'un code de vérification à 6 chiffres
-            code = str(random.randint(100000, 999999))
-            expires_at = timezone.now() + timezone.timedelta(minutes=10)
-            user.verification_code = code
-            user.code_expires_at = expires_at
-            user.is_phone_verified = False
-
-            try:
-                user.save()
-                print("Utilisateur sauvegardé avec succès.")
-            except Exception as e:
-                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
-                import traceback
-                traceback.print_exc()
-                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             print("----- Fin de la méthode post -----")
-            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
-        else:
-            print("Erreur de validation du serializer :", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    def post(self, request):
-        print("Données reçues :", request.data)  # Log des données entrantes
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            print("Données validées :", data)
-            email = data['email']
-            password = data['password']
-            first_name = data['first_name']
-            last_name = data['last_name']
-            phone_number = data['phone_number']
-
-            if CustomUser.objects.filter(email=email).exists():
-                print("Utilisateur déjà existant pour l'email :", email)
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                # Création de l'utilisateur
-                user = CustomUser.objects.create_user(
-                    email=email,
-                    password=password,
-                    first_name=first_name,
-                    last_name=last_name,
-                    phone_number=phone_number
-                )
-                print("Utilisateur créé :", user)
-            except Exception as e:
-                print("Erreur lors de la création de l'utilisateur :", e)
-                import traceback
-                traceback.print_exc()
-                return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # Génération d'un code de vérification à 6 chiffres
-            code = str(random.randint(100000, 999999))
-            expires_at = timezone.now() + timezone.timedelta(minutes=10)
-            user.verification_code = code
-            user.code_expires_at = expires_at
-            user.is_phone_verified = False
-
-            try:
-                user.save()
-                print("Utilisateur sauvegardé avec succès.")
-            except Exception as e:
-                print("Erreur lors de la sauvegarde de l'utilisateur :", e)
-                import traceback
-                traceback.print_exc()
-                return Response({'error': f'Error saving user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # Bloc d'envoi de SMS commenté pour l'instant
-            """
-            try:
-                account_sid = "YOUR_TWILIO_SID"
-                auth_token = "YOUR_TWILIO_AUTH_TOKEN"
-                client = Client(account_sid, auth_token)
-
-                message = client.messages.create(
-                    body=f"Votre code de vérification est : {code}",
-                    from_="+1234567890",  # Remplacez par votre numéro Twilio
-                    to=phone_number
-                )
-            except Exception as e:
-                print("Erreur lors de l'envoi du SMS :", e)
-                import traceback
-                traceback.print_exc()
-                user.delete()
-                return Response({'error': f'Failed to send SMS. Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            """
-
-            return Response({'message': 'User created (SMS sending skipped for test).'}, status=status.HTTP_201_CREATED)
-        else:
-            print("Erreur de validation du serializer :", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    def post(self, request):
-        print("Données reçues :", request.data)  # Log des données entrantes
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            email = data['email']
-            password = data['password']
-            first_name = data['first_name']
-            last_name = data['last_name']
-            phone_number = data['phone_number']
-
-            if CustomUser.objects.filter(email=email).exists():
-                return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Création de l'utilisateur
-            user = CustomUser.objects.create_user(
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name,
-                phone_number=phone_number
+            return Response(
+                {'message': 'User created (SMS sending skipped for test).'},
+                status=status.HTTP_201_CREATED
             )
-
-            # Génération d'un code de vérification à 6 chiffres
-            code = str(random.randint(100000, 999999))
-            expires_at = timezone.now() + timezone.timedelta(minutes=10)
-            user.verification_code = code
-            user.code_expires_at = expires_at
-            user.is_phone_verified = False
-            user.save()
-
-            # Envoi du SMS via Twilio
-            try:
-                account_sid = "YOUR_TWILIO_SID"
-                auth_token = "YOUR_TWILIO_AUTH_TOKEN"
-                client = Client(account_sid, auth_token)
-
-                message = client.messages.create(
-                    body=f"Votre code de vérification est : {code}",
-                    from_="+1234567890",  # Remplacez par votre numéro Twilio
-                    to=phone_number
-                )
-            except Exception as e:
-                # En cas d'erreur lors de l'envoi, supprimer l'utilisateur
-                user.delete()
-                return Response({'error': 'Failed to send SMS. Please try again later.'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            return Response({'message': 'User created and SMS sent.'}, status=status.HTTP_201_CREATED)
         else:
+            print("Erreur de validation du serializer :", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from .serializers import BusinessSerializer
