@@ -1,4 +1,5 @@
 # Imports Django
+import traceback
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
@@ -26,6 +27,7 @@ from .serializers import (
     UserRegistrationSerializer,
     BusinessSerializer
 )
+from django.core.paginator import Paginator
 
 @api_view(['POST'])
 def register_api(request):
@@ -166,6 +168,36 @@ class RegisterUserView(APIView):
             print("Erreur de validation du serializer :", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class BusinessSearchView(APIView):
+    def get(self, request):
+        # Récupérer les paramètres de recherche
+        category = request.query_params.get('category', '')
+        city = request.query_params.get('city', '')
+        page = request.query_params.get('page', 1)
+
+        # Filtrer les entreprises
+        businesses = Business.objects.all()
+        if category:
+            businesses = businesses.filter(category__name__icontains=category)
+        if city:
+            businesses = businesses.filter(address__icontains=city)
+
+        # Mise en place de la pagination (10 résultats par page)
+        paginator = Paginator(businesses, 10)
+        try:
+            businesses_page = paginator.page(page)
+        except Exception as e:
+            return Response({"error": "Page invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Sérialiser les résultats
+        serializer = BusinessSerializer(businesses_page, many=True)
+        data = {
+            "results": serializer.data,
+            "page": int(page),
+            "total_pages": paginator.num_pages,
+            "total_results": paginator.count,
+        }
+        return Response(data, status=status.HTTP_200_OK)
 from .serializers import BusinessSerializer
 
 class AddBusinessView(APIView):
@@ -216,6 +248,13 @@ class AddBusinessView(APIView):
 class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_term = self.request.query_params.get('search', None)
+        if search_term:
+            queryset = queryset.filter(name__icontains=search_term)
+        return queryset
 
 
 from dj_rest_auth.registration.views import SocialLoginView

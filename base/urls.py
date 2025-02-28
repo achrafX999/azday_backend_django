@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from base.serializers import AddCategoryView
-from .views import AddBusinessView, CategoryListView, GoogleLogin, RegisterUserView, sign_in_api  # Import de la vue GoogleLogin
+from .views import AddBusinessView, BusinessSearchView, CategoryListView, GoogleLogin, RegisterUserView, sign_in_api  # Import de la vue GoogleLogin
 from . import views 
 
 
@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/business/add/', AddBusinessView.as_view(), name='add_business'),
     path('api/category/add/', AddCategoryView.as_view(), name='add_category'),
     path('api/categories/', CategoryListView.as_view(), name='list_categories'),
+    path('api/search/', BusinessSearchView.as_view(), name='business-search'),
+
     ]
 
 

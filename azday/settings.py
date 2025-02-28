@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -153,8 +154,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 MEDIA_URL = '/business_images/'
-
-MEDIA_ROOT = BASE_DIR / 'static/business_images'
+MEDIA_ROOT = BASE_DIR / 'business_images'
 
 
 # Default primary key field type
