@@ -19,7 +19,7 @@ import json
 from twilio.rest import Client
 
 # Imports locaux
-from .models import Business, Category, Review, OpeningHours, CustomUser
+from .models import Business, BusinessImage, Category, Review, OpeningHours, CustomUser
 from .forms import CustomUserCreationForm, BusinessForm
 from .serializers import (
     CategorySerializer,
@@ -28,6 +28,8 @@ from .serializers import (
     BusinessSerializer
 )
 from django.core.paginator import Paginator
+from rest_framework.generics import RetrieveAPIView
+
 
 @api_view(['POST'])
 def register_api(request):
@@ -198,6 +200,30 @@ class BusinessSearchView(APIView):
             "total_results": paginator.count,
         }
         return Response(data, status=status.HTTP_200_OK)
+    
+class BusinessDetailView(RetrieveAPIView):
+    queryset = Business.objects.all()
+    serializer_class = BusinessSerializer
+    
+class BusinessHelpfulView(APIView):
+    def post(self, request, pk):
+        try:
+            business = Business.objects.get(pk=pk)
+            business.helpful_count += 1
+            business.save()
+            return Response({'helpful_count': business.helpful_count}, status=status.HTTP_200_OK)
+        except Business.DoesNotExist:
+            return Response({'error': 'Business not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class BusinessReportView(APIView):
+    def post(self, request, pk):
+        try:
+            business = Business.objects.get(pk=pk)
+            business.report_count += 1
+            business.save()
+            return Response({'report_count': business.report_count}, status=status.HTTP_200_OK)
+        except Business.DoesNotExist:
+            return Response({'error': 'Business not found'}, status=status.HTTP_404_NOT_FOUND)
 from .serializers import BusinessSerializer
 
 class AddBusinessView(APIView):
@@ -241,6 +267,9 @@ class AddBusinessView(APIView):
                         {'error': f'Error processing opening_hours: {str(e)}'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
+                for key, file in request.FILES.items():
+                    if key.startswith('images_'):
+                        BusinessImage.objects.create(business=business, image=file)
             return Response(BusinessSerializer(business).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
