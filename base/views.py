@@ -29,6 +29,7 @@ from .serializers import (
 )
 from django.core.paginator import Paginator
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import ListAPIView
 
 
 @api_view(['POST'])
@@ -285,6 +286,9 @@ class CategoryListView(generics.ListAPIView):
             queryset = queryset.filter(name__icontains=search_term)
         return queryset
 
+class BusinessListView(ListAPIView):
+    queryset = Business.objects.all()
+    serializer_class = BusinessSerializer
 
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
