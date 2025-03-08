@@ -1,5 +1,11 @@
 from rest_framework import serializers
 from .models import Business, CustomUser , Visiteur
+from .models import Business, BusinessImage, CustomUser, OpeningHours
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Category
+from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,24 +30,28 @@ class UserRegistrationSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match.")
         return data
     
+class OpeningHoursSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpeningHours
+        fields = ['day', 'open_time', 'close_time']
+
+class BusinessImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessImage
+        fields = ['image']
+
 class BusinessSerializer(serializers.ModelSerializer):
+    opening_hours = OpeningHoursSerializer(many=True, read_only=True)
+    images = BusinessImageSerializer(many=True, read_only=True)  # Ajouté ici
+
     class Meta:
         model = Business
         fields = [
-            'id', 'owner', 'name', 'description', 'category', 'address',
-            'phone_number', 'email', 'website', 'profile_picture',
-            'latitude', 'longitude', 'languages', 'payment_methods',
-            'product_services', 'specialize', 'created_at'
+            'id', 'name', 'description', 'address', 'phone_number','website',
+            'profile_picture', 'languages', 'payment_methods',
+            'product_services', 'specialize', 'opening_hours', 'images',
+            'latitude', 'longitude', 'created_at'
         ]
-        extra_kwargs = {
-            'owner': {'read_only': True},
-        }
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Category
-from rest_framework import serializers
 
 # Serializer pour la catégorie
 class CategorySerializer(serializers.ModelSerializer):
@@ -63,3 +73,4 @@ class VisiteurSerializer(serializers.ModelSerializer):
     class Meta:
         model = Visiteur
         fields = ['id', 'first_name', 'last_name', 'email', 'description', 'created_at']
+
