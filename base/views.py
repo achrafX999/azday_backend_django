@@ -19,13 +19,19 @@ from twilio.rest import Client
 
 # Imports locaux
 from .models import Business, Category, Review, OpeningHours, CustomUser
-from .forms import CustomUserCreationForm, BusinessForm
 from .serializers import (
     CategorySerializer,
     UserSerializer,
     UserRegistrationSerializer,
-    BusinessSerializer
+    BusinessSerializer,
+    VisiteurSerializer
 )
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Visiteur
+from .serializers import VisiteurSerializer
 
 @api_view(['POST'])
 def register_api(request):
@@ -444,63 +450,12 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
-# Create your views here.
 
 
-def home(request):
-    businesses = Business.objects.all()
-    context = {'businesses': businesses}
-    return render(request,'base/index.html',context)
-
-
-def business_profile(request, business_id):
-    # Fetch the business details based on the ID
-    business = get_object_or_404(Business, id=business_id)
-    # Fetch reviews for the business (if a Review model exists)
-    reviews = Review.objects.filter(business=business).order_by('-created_at')
-    # Context to pass data to the template
-    context = {
-        'business': business,
-        'reviews': reviews,
-    }
-    return render(request, 'base/business_detail.html', context)
-
-
-def loginPage(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('home')  # Redirect to a 'home' page after login
-        else:
-            messages.error(request, 'Invalid email or password')
-
-    return render(request, 'base/signin.html')
-
-
-
-
-
-
-def logoutuser(request):
-    logout(request)
-    return redirect('home')
-
-
-
-@login_required(login_url='login')
-def business_create_view(request):
-    if request.method == "POST":
-        form = BusinessForm(request.POST, request.FILES)
-        if form.is_valid():
-            business = form.save(commit=False)
-            business.owner = request.user
-            business.save()
-            return redirect('home')  # Redirect to a list view or success page
-    else:
-        form = BusinessForm()
-
-    return render(request, 'base/business_form.html', {'form': form})
-
+class VisiteurCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = VisiteurSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

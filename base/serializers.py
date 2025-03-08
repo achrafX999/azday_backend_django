@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Business, CustomUser
+from .models import Business, CustomUser , Visiteur
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -56,3 +56,10 @@ class AddCategoryView(APIView):
             category = serializer.save()
             return Response(CategorySerializer(category).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class VisiteurSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Visiteur
+        fields = ['id', 'first_name', 'last_name', 'email', 'description', 'created_at']
