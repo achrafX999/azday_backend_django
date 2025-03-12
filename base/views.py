@@ -312,3 +312,59 @@ class VisiteurCreateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Review
+from .serializers import ReviewSerializer
+
+class ReviewListView(generics.ListAPIView):
+    """List all reviews (optionally filter by business)"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        business_id = self.request.query_params.get('business', None)
+        if business_id:
+            return Review.objects.filter(business_id=business_id)
+        return super().get_queryset()
+
+
+class ReviewDetailView(generics.RetrieveAPIView):
+    """Retrieve a specific review"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+
+class ReviewCreateView(generics.CreateAPIView):
+    """Create a new review (authenticated users only)"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ReviewUpdateView(generics.UpdateAPIView):
+    """Update a review (only the owner can update)"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Review.objects.filter(user=self.request.user)
+
+
+class ReviewDeleteView(generics.DestroyAPIView):
+    """Delete a review (only the owner or an admin can delete)"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:  # Allow admin to delete any review
+            return Review.objects.all()
+        return Review.objects.filter(user=self.request.user)

@@ -5,6 +5,7 @@ from django.urls import path
 from base.serializers import AddCategoryView
 from .views import AddBusinessView, CategoryListView, GoogleLogin, RegisterUserView, sign_in_api , VisiteurCreateView # Import de la vue GoogleLogin
 from .views import AddBusinessView, BusinessHelpfulView, BusinessListView, BusinessReportView, BusinessSearchView,BusinessDetailView, CategoryListView, GoogleLogin, RegisterUserView, sign_in_api  # Import de la vue GoogleLogin
+from .views import ReviewListView, ReviewDetailView, ReviewCreateView, ReviewUpdateView, ReviewDeleteView
 from . import views 
 
 
@@ -22,6 +23,11 @@ urlpatterns = [
     path('api/business/<int:pk>/helpful/', BusinessHelpfulView.as_view(), name='business-helpful'),
     path('api/business/<int:pk>/report/', BusinessReportView.as_view(), name='business-report'),
     path('api/business/all/', BusinessListView.as_view(), name='business-all'),    
+    path('api/reviews/', ReviewListView.as_view(), name='review-list'),
+    path('api/reviews/<int:pk>/', ReviewDetailView.as_view(), name='review-detail'),
+    path('api/reviews/create/', ReviewCreateView.as_view(), name='review-create'),
+    path('api/reviews/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update'),
+    path('api/reviews/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review-delete'),
     ]
 
 

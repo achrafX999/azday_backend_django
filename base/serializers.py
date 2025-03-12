@@ -74,3 +74,16 @@ class VisiteurSerializer(serializers.ModelSerializer):
         model = Visiteur
         fields = ['id', 'first_name', 'last_name', 'email', 'description', 'created_at']
 
+from rest_framework import serializers
+from .models import Review
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    business_name = serializers.CharField(source='business.name', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'business', 'business_name', 'user', 'user_email', 'rating', 'comment', 'created_at']
+        read_only_fields = ['user']  # User should not be provided in request, taken from logged-in user
+
+
