@@ -208,8 +208,10 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Redirections après connexion/déconnexion
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'http://localhost:4200/home'
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = 'http://localhost:4200/home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'http://localhost:4200/sign-in'
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False  # Désactive le champ username
