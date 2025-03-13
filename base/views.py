@@ -330,12 +330,25 @@ class ReviewListView(generics.ListAPIView):
         if business_id:
             return Review.objects.filter(business_id=business_id)
         return super().get_queryset()
+    
+class BusinessReviewsView(ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        business_id = self.request.query_params.get('business_id')
+        if business_id:
+            return Review.objects.filter(business=business_id)
+        return Review.objects.all()
 
 
 class ReviewDetailView(generics.RetrieveAPIView):
-    """Retrieve a specific review"""
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        business_id = self.request.query_params.get('business_id')
+        if business_id:
+            return Review.objects.filter(business=business_id)
+        return Review.objects.all()
 
 
 class ReviewCreateView(generics.CreateAPIView):

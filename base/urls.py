@@ -24,10 +24,7 @@ urlpatterns = [
     path('api/business/<int:pk>/report/', BusinessReportView.as_view(), name='business-report'),
     path('api/business/all/', BusinessListView.as_view(), name='business-all'),    
     path('api/reviews/', ReviewListView.as_view(), name='review-list'),
-    path('api/reviews/<int:pk>/', ReviewDetailView.as_view(), name='review-detail'),
     path('api/reviews/create/', ReviewCreateView.as_view(), name='review-create'),
-    path('api/reviews/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update'),
-    path('api/reviews/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review-delete'),
     ]
 
 
